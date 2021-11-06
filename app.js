@@ -1,22 +1,14 @@
-require("dotenv").config();
-const mongoose = require("mongoose");
+const express = require ('express');
+const path = require('path');
+const routes =require ('./routes/index');
+const bodyParser = require('body-parser');
+const app = express();
 
-mongoose.connect(process.env.DATABASE, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine','pug');
 
-mongoose.connection
-  .on("open", () => {
-    console.log("Mongoose connection open");
-  })
-  .on("error", (err) => {
-    console.log(`Connection error :${err.message}`);
-  });
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/', routes);
+app.use(express.static('public'));
 
-require("./models/registration");
-
-const app = require("./app");
-const server = app.listen(3000, function () {
-  console.log(`Express is running on port ${server.address().port}`);
-});
+module.exports = app;

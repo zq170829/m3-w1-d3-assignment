@@ -1,16 +1,22 @@
 const express = require("express");
+const path = require('path');
+const auth = require('http-auth');
+const basic = auth.basic({
+  file:path.join(__dirname, '../users.htpasswd'),
+});
+
 const mongoose = require("mongoose");
 const router = express.Router();
 const { check, validationResult } = require("express-validator");
-const registration = mongoose.model("registration");
+const Registration = mongoose.model("Registration");
 
 router.get("/", function (req, res) {
   // res.send('It works!');
   res.render("form", { title: "Registration form" });
 });
 
-router.get("/registrations", (req, res) => {
-  registration
+router.get("/registrations", basic.check((req, res) => {
+  Registration
     .find()
     .then((registrations) => {
       res.render("index", { title: "Listing registrations", registrations });
@@ -18,7 +24,7 @@ router.get("/registrations", (req, res) => {
     .catch(() => {
       res.send("Sorry! Something went wrong.");
     });
-});
+}));
 
 router.post(
   "/",
@@ -29,13 +35,11 @@ router.post(
   function (req, res) {
     //console.log(req.body);
     const errors = validationResult(req);
-    const registration = new registration(req.body);
+
     if (errors.isEmpty()) {
-      registration
-        .save()
-        .then(() => {
-          res.send("Thank you for your registration!");
-        })
+      const registration = new Registration(req.body);
+      registration.save()
+        .then(() => {res.send("Thank you for your registration!");})
         .catch((err) => {
           console.log(err);
           res.send("Sorry! Something went wrong!");
