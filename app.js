@@ -1,13 +1,22 @@
-const express = require ('express');
-const path = require('path');
-const routes =require ('./routes/index');
-const bodyParser = require('body-parser');
+require("dotenv").config();
+const mongoose = require("mongoose");
 
-const app = express();
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine','pug');
+mongoose.connect(process.env.DATABASE, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/', routes);
+mongoose.connection
+  .on("open", () => {
+    console.log("Mongoose connection open");
+  })
+  .on("error", (err) => {
+    console.log(`Connection error :${err.message}`);
+  });
 
-module.exports = app;
+require("./models/registration");
+
+const app = require("./app");
+const server = app.listen(3000, function () {
+  console.log(`Express is running on port ${server.address().port}`);
+});
